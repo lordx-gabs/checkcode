@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__idea__list_directory_tree",
+      "mcp__idea__build_project"
+    ]
+  }
+}
