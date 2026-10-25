@@ -34,6 +34,11 @@ public class GlobalExceptionHandler {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
 	}
 
+	@ExceptionHandler(UnauthorizedException.class)
+	public ProblemDetail handleUnauthorized(UnauthorizedException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+	}
+
 	// Covers the race between two simultaneous registrations with the same email (unique constraint)
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex) {

@@ -45,4 +45,17 @@ public class JwtService {
 			throw new RuntimeException("Invalid or expired token", e);
 		}
 	}
+
+	public String extractRoleFromToken(String token) {
+		Algorithm algorithm = Algorithm.HMAC256(secret);
+		try {
+			return JWT.require(algorithm)
+					.build()
+					.verify(token)
+					.getClaim("role")
+					.asString();
+		} catch (JWTVerificationException e) {
+			throw new RuntimeException("Invalid or expired token", e);
+		}
+	}
 }

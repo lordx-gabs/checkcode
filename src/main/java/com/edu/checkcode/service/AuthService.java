@@ -15,28 +15,28 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class AuthService {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-	public LoginResponse login(LoginRequest request) {
-		String email = request.email().trim().toLowerCase(Locale.ROOT);
+    public LoginResponse login(LoginRequest request) {
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
 
-		User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
-		if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-			throw new InvalidCredentialsException("Invalid email or password");
-		}
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
 
-		String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
 
-		return new LoginResponse(
-				token,
-				user.getId(),
-				user.getName(),
-				user.getEmail(),
-				user.getRole()
-		);
-	}
+        return new LoginResponse(
+                token,
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
 }
