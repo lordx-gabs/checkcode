@@ -44,7 +44,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setBirthDate(request.birthDate());
         user.setGender(request.gender());
-        user.setRole(request.role());
+        user.setRole(Role.USER);
 
         return UserResponse.from(userRepository.save(user));
     }

@@ -31,9 +31,6 @@ public record RegisterUserRequest(
 		LocalDate birthDate,
 
 		@NotNull(message = "Gender is required")
-		Gender gender,
-
-		@NotNull(message = "Role is required")
-		Role role
+		Gender gender
 ) {
 }

@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -28,9 +27,6 @@ public class Ticket {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
 
-	@Column(nullable = false, precision = 10, scale = 2)
-	private BigDecimal price;
-
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
 
@@ -38,8 +34,19 @@ public class Ticket {
 	@JoinColumn(name = "event_id", nullable = false)
 	private Event event;
 
+	@ManyToOne
+	@JoinColumn(name = "payment_id", nullable = false)
+	private Payment payment;
+
 	@PrePersist
 	void onPersist() {
 		this.createdAt = Instant.now();
+	}
+
+	public static Ticket from(Payment payment) {
+		Ticket ticket = new Ticket();
+		ticket.setEvent(payment.getEvent());
+		ticket.setPayment(payment);
+		return ticket;
 	}
 }
