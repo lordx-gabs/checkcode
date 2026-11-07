@@ -34,13 +34,13 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final TicketRepository ticketRepository;
 
-    @Value("${mercadopago.back-url.success:https://localhost:8080/api/payment/success}")
+    @Value("${mercadopago.back-url.success:https://checkcode-acok.onrender.com/api/payment/success}")
     private String successUrl;
 
-    @Value("${mercadopago.back-url.failure:https://localhost:8080/api/payment/failure}")
+    @Value("${mercadopago.back-url.failure:https://checkcode-acok.onrender.com/api/payment/failure}")
     private String failureUrl;
 
-    @Value("${mercadopago.back-url.pending:https://localhost:8080/api/payment/pending}")
+    @Value("${mercadopago.back-url.pending:https://checkcode-acok.onrender.com/api/payment/pending}")
     private String pendingUrl;
 
     @Transactional
