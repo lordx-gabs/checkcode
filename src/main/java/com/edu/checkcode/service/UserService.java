@@ -69,6 +69,10 @@ public class UserService {
             throw new UnauthorizedException("Only MANAGER role can register employees");
         }
 
+        String managerId = authentication.getName();
+        User manager = userRepository.findById(UUID.fromString(managerId))
+                .orElseThrow(() -> new RuntimeException("Manager not found"));
+
         String email = request.email().trim().toLowerCase(Locale.ROOT);
 
         if (userRepository.existsByEmail(email)) {
@@ -82,6 +86,7 @@ public class UserService {
         employee.setBirthDate(request.birthDate());
         employee.setGender(request.gender());
         employee.setRole(Role.EMPLOYEE);
+        employee.setManager(manager);
 
         User savedEmployee = userRepository.save(employee);
         String employeeToken = jwtService.generateToken(savedEmployee);

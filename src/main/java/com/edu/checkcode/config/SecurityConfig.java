@@ -3,6 +3,7 @@ package com.edu.checkcode.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,6 +33,9 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/auth/login", "/api/users/register").permitAll()
 						.requestMatchers("/docs", "/api-docs/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/payment/success", "/api/payment/failure", "/api/payment/pending").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/payment/webhook").permitAll()
+						.requestMatchers("/api/payment/**").authenticated()
 						.anyRequest().authenticated()
 				)
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

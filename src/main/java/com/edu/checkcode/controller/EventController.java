@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,6 +24,15 @@ import java.util.UUID;
 public class EventController {
 
 	private final EventService eventService;
+
+	@GetMapping
+	@Operation(summary = "Get all events", description = "Returns all events with their employees")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Events retrieved successfully")
+	})
+	public List<EventResponse> getAllEvents() {
+		return eventService.getAllEvents();
+	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)

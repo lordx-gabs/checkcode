@@ -1,14 +1,6 @@
 package com.edu.checkcode.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -57,6 +49,10 @@ public class Event {
 
 	@OneToMany(mappedBy = "event")
 	private List<Ticket> tickets = new ArrayList<>();
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "manager_id")
+	private User manager;
 
 	@PrePersist
 	void onPersist() {

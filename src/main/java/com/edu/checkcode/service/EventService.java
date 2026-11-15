@@ -6,7 +6,9 @@ import com.edu.checkcode.model.Address;
 import com.edu.checkcode.model.Event;
 import com.edu.checkcode.model.Location;
 import com.edu.checkcode.model.Role;
+import com.edu.checkcode.model.User;
 import com.edu.checkcode.repository.EventRepository;
+import com.edu.checkcode.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -26,6 +29,7 @@ import java.util.UUID;
 public class EventService {
 
 	private final EventRepository eventRepository;
+	private final UserRepository userRepository;
 
 	@Transactional
 	public EventResponse registerEvent(RegisterEventRequest request) {
@@ -49,6 +53,10 @@ public class EventService {
 			throw new UnauthorizedException("Only MANAGER can register events");
 		}
 
+		String managerId = authentication.getName();
+		User manager = userRepository.findById(UUID.fromString(managerId))
+				.orElseThrow(() -> new RuntimeException("Manager not found"));
+
 		if (request.date().isBefore(LocalDate.now())) {
 			throw new IllegalArgumentException("Event date cannot be in the past");
 		}
@@ -70,8 +78,12 @@ public class EventService {
 		event.setEndTime(request.endTime());
 		event.setLocation(mapLocation(request.location()));
 		event.setTicketPrice(request.ticketPrice());
+		event.setManager(manager);
 
-		return EventResponse.from(eventRepository.save(event));
+		Event savedEvent = eventRepository.save(event);
+		List<User> employees = userRepository.findByManagerId(manager.getId());
+
+		return EventResponse.from(savedEvent, employees);
 	}
 
 	@Transactional
@@ -144,7 +156,10 @@ public class EventService {
 			event.setTicketPrice(request.ticketPrice());
 		}
 
-		return EventResponse.from(eventRepository.save(event));
+		Event savedEvent = eventRepository.save(event);
+		List<User> employees = userRepository.findByManagerId(event.getManager().getId());
+
+		return EventResponse.from(savedEvent, employees);
 	}
 
 	private Location mapLocation(LocationRequest request) {
@@ -172,5 +187,37 @@ public class EventService {
 		if (start.isAfter(end) || start.equals(end)) {
 			throw new IllegalArgumentException("Start time must be before end time");
 		}
+	}
+
+	@Transactional(readOnly = true)
+	public List<EventResponse> getAllEvents() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		if (authentication == null) {
+			throw new UnauthorizedException("Authentication not found");
+		}
+
+		String userId = authentication.getName();
+		User user = userRepository.findById(UUID.fromString(userId))
+				.orElseThrow(() -> new RuntimeException("User not found"));
+
+		return eventRepository.findAll().stream()
+				.map(event -> {
+					UUID id = null;
+
+					if (user.getRole() == Role.MANAGER) {
+						id = user.getId();
+					} else {
+						if(user.getManager() != null) {
+							id = user.getManager().getId();
+						}
+					}
+
+					List<User> employees = (id != null)
+							? userRepository.findByManagerId(id)
+							: null;
+					return EventResponse.from(event, employees);
+				})
+				.toList();
 	}
 }

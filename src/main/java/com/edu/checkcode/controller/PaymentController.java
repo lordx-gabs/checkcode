@@ -60,6 +60,9 @@ public class PaymentController {
             @RequestParam("external_reference") String externalReference,
             @RequestParam("preference_id") String preferenceId
     ) throws MPException, MPApiException {
+//        return ResponseEntity.status(HttpStatus.FOUND)
+//                .location(URI.create("https://www.exemplo.com/nova-pagina"))
+//                .build();
         paymentService.updatePaymentStatus(paymentId, externalReference);
         return ResponseEntity.ok("Payment successful! Payment ID: " + paymentId);
     }

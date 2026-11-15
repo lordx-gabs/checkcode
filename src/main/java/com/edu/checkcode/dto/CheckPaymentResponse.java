@@ -1,5 +1,6 @@
 package com.edu.checkcode.dto;
 
+import com.edu.checkcode.model.Payment;
 import com.edu.checkcode.util.enums.PaymentMethod;
 import com.edu.checkcode.util.enums.PaymentStatus;
 
@@ -7,12 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record CheckPaymentResponse(
-        UUID paymentId,
-        double amount,
-        PaymentMethod paymentMethod,
-        PaymentStatus status,
-        String statusDescription,
-        Instant createdAt,
+        Payment payment,
         TicketInfo ticket
 ) {
     public record TicketInfo(

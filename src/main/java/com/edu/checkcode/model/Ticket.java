@@ -1,14 +1,7 @@
 package com.edu.checkcode.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.edu.checkcode.util.enums.TicketStatus;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,6 +31,14 @@ public class Ticket {
 	@JoinColumn(name = "payment_id", nullable = false)
 	private Payment payment;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	@Column(name = "ticket_status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private TicketStatus ticketStatus = TicketStatus.NEW;
+
 	@PrePersist
 	void onPersist() {
 		this.createdAt = Instant.now();
@@ -47,6 +48,7 @@ public class Ticket {
 		Ticket ticket = new Ticket();
 		ticket.setEvent(payment.getEvent());
 		ticket.setPayment(payment);
+		ticket.setUser(payment.getUser());
 		return ticket;
 	}
 }

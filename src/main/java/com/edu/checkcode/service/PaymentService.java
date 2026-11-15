@@ -7,9 +7,11 @@ import com.edu.checkcode.model.Event;
 import com.edu.checkcode.model.Payment;
 import com.edu.checkcode.model.Role;
 import com.edu.checkcode.model.Ticket;
+import com.edu.checkcode.model.User;
 import com.edu.checkcode.repository.EventRepository;
 import com.edu.checkcode.repository.PaymentRepository;
 import com.edu.checkcode.repository.TicketRepository;
+import com.edu.checkcode.repository.UserRepository;
 import com.edu.checkcode.util.enums.PaymentMethod;
 import com.edu.checkcode.util.enums.PaymentStatus;
 import com.mercadopago.client.payment.PaymentClient;
@@ -33,6 +35,7 @@ public class PaymentService {
     private final EventRepository eventRepository;
     private final PaymentRepository paymentRepository;
     private final TicketRepository ticketRepository;
+    private final UserRepository userRepository;
 
     @Value("${mercadopago.back-url.success:https://checkcode-acok.onrender.com/api/payment/success}")
     private String successUrl;
@@ -45,6 +48,10 @@ public class PaymentService {
 
     @Transactional
     public CreatePaymentResponse createPayment(UUID eventId) throws MPException, MPApiException {
+
+        System.out.println("teste: " + successUrl);
+        System.out.println("teste2: " + failureUrl);
+        System.out.println("teste3: " + pendingUrl);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -65,11 +72,16 @@ public class PaymentService {
             throw new UnauthorizedException("Only USER can create a payment");
         }
 
+        String userId = authentication.getName();
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
         Payment payment = new Payment();
         payment.setEvent(event);
+        payment.setUser(user);
         payment.setAmount(event.getTicketPrice().doubleValue());
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -96,11 +108,17 @@ public class PaymentService {
                 .items(items)
                 .backUrls(backUrlsRequest)
                 .autoReturn("approved")
-                .externalReference(eventId.toString())
+                .externalReference(savedPayment.getId().toString())
                 .build();
 
         PreferenceClient client = new PreferenceClient();
-        Preference preference = client.create(preferenceRequest);
+        Preference preference;
+        try {
+             preference = client.create(preferenceRequest);
+        } catch (MPApiException e) {
+            System.out.println("Erro do MP: " + e.getApiResponse().getContent());
+            throw e;
+        }
 
         return new CreatePaymentResponse(
                 savedPayment.getId(),
@@ -148,7 +166,7 @@ public class PaymentService {
         try {
             if (payload.contains("payment_id")) {
                 String paymentId = extractValue(payload, "payment_id");
-                updatePaymentStatus(paymentId, null);
+                updatePaymentStatus(paymentId, "");
             }
         } catch (Exception e) {
             throw new RuntimeException("Error processing webhook notification", e);
@@ -182,12 +200,7 @@ public class PaymentService {
         }
 
         return new CheckPaymentResponse(
-                payment.getId(),
-                payment.getAmount(),
-                payment.getPaymentMethod(),
-                payment.getStatus(),
-                payment.getStatusDescription(),
-                payment.getCreatedAt(),
+                payment,
                 ticketInfo
         );
     }

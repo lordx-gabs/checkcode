@@ -12,4 +12,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
+ENV MERCADOPAGO_BACK_URL_SUCCESS=https://checkcode-acok.onrender.com/api/payment/success
+ENV MERCADOPAGO_BACK_URL_FAILURE=https://checkcode-acok.onrender.com/api/payment/failure
+ENV MERCADOPAGO_BACK_URL_PENDING=https://checkcode-acok.onrender.com/api/payment/pending
 ENTRYPOINT ["java", "-jar", "app.jar"]
